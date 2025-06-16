@@ -37,3 +37,4 @@ build/
 /.gitattributes
 /.mvn/
 /.idea/
+/shortDescription.md

@@ -37,7 +37,7 @@ Elements to consider:
 ## 📌 Job Item: Required Data Points
 
 For **each job**, collect the following:
-![pic2.png](images/pic2.png)
+![pic1.png](images/pic1.png)
 
 - Position name
 - URL to organization
