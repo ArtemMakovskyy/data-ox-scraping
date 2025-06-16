@@ -22,7 +22,7 @@ public class JsoupHtmlFetcher {
             System.out.println(html);
 
         } catch (Exception e) {
-            System.err.println("Ошибка при подключении или парсинге страницы: " + e.getMessage());
+            System.err.println("Error connection or page scrapping: " + e.getMessage());
         }
     }
 }

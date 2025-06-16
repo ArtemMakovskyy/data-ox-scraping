@@ -1,5 +1,6 @@
 package com.dataox.controller;
 
+
 import com.dataox.scraper.JsoupHtmlFetcher;
 import com.dataox.scraper.SeleniumHtmlFetcher;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ public class TestController {
     private final JsoupHtmlFetcher jsoupHtmlFetcher;
     private final SeleniumHtmlFetcher seleniumHtmlFetcher;
 
+
     @GetMapping("/j")
     public String test_jsoup(){
         jsoupHtmlFetcher.fetch();
@@ -23,4 +25,11 @@ public class TestController {
         seleniumHtmlFetcher.fetch();
         return "test_selenium";
     }
+
+    @GetMapping("/s2")
+    public String test_selenium2(){
+        seleniumHtmlFetcher.fetch2();
+        return "test_selenium2";
+    }
+
 }

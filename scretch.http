@@ -1,0 +1,4 @@
+### GET product
+GET http://localhost:8080/s
+Content-Type: application/json
+
