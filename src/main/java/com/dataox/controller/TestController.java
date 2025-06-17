@@ -14,9 +14,15 @@ public class TestController {
     private final SeleniumHtmlFetcher seleniumHtmlFetcher;
 
 
+    @GetMapping("/jft")
+    public String test_jsoup_FT(){
+        jsoupHtmlFetcher.fetchTables();
+        return "test_jsoup";
+    }
+
     @GetMapping("/j")
     public String test_jsoup(){
-        jsoupHtmlFetcher.fetch();
+        jsoupHtmlFetcher.fetchPage();
         return "test_jsoup";
     }
 

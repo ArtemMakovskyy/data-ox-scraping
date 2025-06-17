@@ -1,4 +1,13 @@
-### GET product
+### GET selenium
 GET http://localhost:8080/s
 Content-Type: application/json
 
+
+### GET jsoup
+GET http://localhost:8080/j
+Content-Type: application/json
+
+
+### GET jsoup
+GET http://localhost:8080/jft
+Content-Type: application/json

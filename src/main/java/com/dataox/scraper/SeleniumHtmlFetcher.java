@@ -11,6 +11,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.List;
 
 @Component
 @Log4j2
@@ -49,6 +50,13 @@ public class SeleniumHtmlFetcher {
             // Step 4: Wait for the page to apply the filter (this can be replaced with a more robust wait)
             Thread.sleep(3000);
 
+
+
+
+            findTableWithBlocks(driver);
+            findBlocksInTable(driver);
+
+
             // Step 5: Return the HTML source
             return driver.getPageSource();
 
@@ -56,7 +64,34 @@ public class SeleniumHtmlFetcher {
             log.error("Failed to fetch HTML: {}", e.getMessage(), e);
             return "Error occurred while fetching HTML: " + e.getMessage();
         } finally {
-            driver.quit();
+//            driver.quit();
+        }
+    }
+
+    private List<WebElement> findBlocksInTable(WebDriver driver) {
+        // Найти контейнер с таблицей
+        WebElement tableBlock = driver.findElement(By.cssSelector("div.infinite-scroll-component.sc-beqWaB.biNQIL"));
+
+        // Извлечь все блоки вакансий, которые лежат внутри этого контейнера
+        List<WebElement> jobBlocks = tableBlock.findElements(By.cssSelector("div[itemtype='https://schema.org/JobPosting']"));
+
+        log.info("Found blocks: " + jobBlocks.size());
+
+        return jobBlocks;
+    }
+
+
+    private void findTableWithBlocks(WebDriver driver) {
+        WebElement tableBlock = null;
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            tableBlock = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.cssSelector("div.infinite-scroll-component.sc-beqWaB.biNQIL")
+            ));
+            log.info("Table with blocks found!");
+
+        } catch (TimeoutException e) {
+            log.error("Table with blocks not found");
         }
     }
 
