@@ -2,24 +2,24 @@ package com.dataox.scraper;
 
 import com.dataox.config.WebDriverFactory;
 import com.dataox.dto.JobPostingDTO;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Component;
 
-//import javax.lang.model.element.Element;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Document;
 
 @Component
 @Log4j2
@@ -27,8 +27,9 @@ import org.jsoup.nodes.Document;
 public class SeleniumHtmlFetcher {
 
     private final WebDriverFactory webDriverFactory;
+    private final JobPageFetcher jobPageFetcher;
 
-    public String fetch() {
+    public List<JobPostingDTO> fetch() {
         WebDriver driver = webDriverFactory.createDriver();
         WebDriverWait wait = webDriverFactory.createWait(driver, Duration.ofSeconds(10));
 
@@ -60,25 +61,22 @@ public class SeleniumHtmlFetcher {
 
 
             findTableWithBlocks(driver);
-            findBlocksInTable(driver);
+            List<JobPostingDTO> blocksInTable = findBlocksInTable(driver);
 
 
             // Step 5: Return the HTML source
-            return driver.getPageSource();
+            return blocksInTable;
 
         } catch (Exception e) {
             log.error("Failed to fetch HTML: {}", e.getMessage(), e);
-            return "Error occurred while fetching HTML: " + e.getMessage();
+            return Collections.emptyList();
         } finally {
 //            driver.quit();
         }
     }
 
 
-
-
-
-    private List<WebElement> findBlocksInTable(WebDriver driver) {
+    private List<JobPostingDTO> findBlocksInTable(WebDriver driver) {
 
         // found container with page
         WebElement tableBlock = driver.findElement(By.cssSelector("div.infinite-scroll-component.sc-beqWaB.biNQIL"));
@@ -88,16 +86,17 @@ public class SeleniumHtmlFetcher {
 
         log.info("Found blocks: " + jobBlocks.size());
 
+        List<JobPostingDTO> jobPostings = new ArrayList<>();
 
         //method fetch info from blocks
         if (true) {
 //            List<WebElement> blocks = findBlocksInTable(driver);
-            List<JobPostingDTO> jobPostings = new ArrayList<>();
+//            List<JobPostingDTO> jobPostings = new ArrayList<>();
 
             for (WebElement block : jobBlocks) {
-//                System.out.println(block.getAttribute("outerHTML"));
-                System.out.println(" ");
-                JobPostingDTO dto = new JobPostingDTO();
+                System.out.println(" - - -->  ");
+                System.out.println(block.getAttribute("outerHTML"));
+                System.out.println(" <-- - - -  ");
                 //method get tags and past into dto
                 //todo get tags
 
@@ -110,64 +109,113 @@ public class SeleniumHtmlFetcher {
 //                JobPostingDTO jobPostingDTO = parseJobBlock(block);
 
                 //todo add to list
-                jobPostings.add(dto);
-                log.info(dto);
+                jobPostings.add(jobPostingDTO);
+                log.info(jobPostingDTO);
             }
         }
 
-        return jobBlocks;
+        return jobPostings;
     }
 
 
     public JobPostingDTO parseJobPosting(Element jobElement) {
-        Elements outerHTML = jobElement.getElementsByAttribute("outerHTML");
         JobPostingDTO dto = new JobPostingDTO();
 
-        // Название позиции
-        Element titleElement = jobElement.selectFirst("[itemprop=title]");
-        if (titleElement != null) {
-            dto.setPositionName(titleElement.text());
-        }
-
-        // Ссылка на вакансию
+        // jobPageUrl
         Element jobLink = jobElement.selectFirst("[data-testid=job-title-link]");
         if (jobLink != null) {
             dto.setJobPageUrl("https://jobs.techstars.com" + jobLink.attr("href"));
         }
 
-        // Название организации
-        Element orgNameMeta = jobElement.selectFirst("meta[itemprop=name]");
-        if (orgNameMeta != null) {
-            dto.setOrganizationTitle(orgNameMeta.attr("content"));
+        // positionName
+        Element titleElement = jobElement.selectFirst("[itemprop=title]");
+        if (titleElement != null) {
+            dto.setPositionName(titleElement.text());
         }
 
-        // Ссылка на организацию
+        // organizationUrl
         Element orgLink = jobElement.selectFirst("a[data-testid=company-logo-link]");
         if (orgLink != null) {
             dto.setOrganizationUrl("https://jobs.techstars.com" + orgLink.attr("href"));
         }
 
-        // Логотип
+        // organizationTitle
+        Element orgNameMeta = jobElement.selectFirst("meta[itemprop=name]");
+        if (orgNameMeta != null) {
+            dto.setOrganizationTitle(orgNameMeta.attr("content"));
+        }
+
+        // logoUrl
         Element logoMeta = jobElement.selectFirst("meta[itemprop=logo]");
         if (logoMeta != null) {
             dto.setLogoUrl(logoMeta.attr("content"));
         }
 
-        // Дата публикации
-//        Element postedDate = jobElement.selectFirst("meta[itemprop=datePosted]");
-//        if (postedDate != null) {
-//            dto.setPostedDate(postedDate.attr("content"));
-//        }
+        // postedDateUnix
+        Element postedDate = jobElement.selectFirst("meta[itemprop=datePosted]");
+        if (postedDate != null) {
+            String postedDateContent = postedDate.attr("content");
+            try {
+                LocalDate localDate = LocalDate.parse(postedDateContent, DateTimeFormatter.ISO_LOCAL_DATE);
+                long postedDateUnix = localDate.atStartOfDay(ZoneId.of("UTC")).toEpochSecond();
+                dto.setPostedDateUnix(postedDateUnix);
+            } catch (Exception e) {
+                dto.setPostedDateUnix(0L);
+            }
+        }
 
-        // Теги
-        Elements tagElements = jobElement.select("[data-testid=tag] > div");
-        List<String> tags = tagElements.stream().map(Element::text).toList();
-        dto.setTags(tags);
-        System.out.println(dto);
+        // laborFunction
+        Element laborFunctionElement = jobElement.selectFirst("[itemprop=occupation]");
+        if (laborFunctionElement != null) {
+            dto.setLaborFunction(laborFunctionElement.text());
+        } else {
+            dto.setLaborFunction(null);
+        }
+
+        // locations
+        List<String> locations = new ArrayList<>();
+        Elements locationMetaElements = jobElement.select("[itemprop=jobLocation] meta[itemprop=address]");
+        for (Element locMeta : locationMetaElements) {
+            String address = locMeta.attr("content");
+            if (address != null && !address.isBlank()) {
+                locations.add(address);
+            }
+        }
+        dto.setLocations(locations.isEmpty() ? null : locations);
+
+
+        // descriptionHtml
+        if (dto.getJobPageUrl() != null) {
+            Document jobDetailsPage = jobPageFetcher.fetch(dto.getJobPageUrl());
+
+            if (jobDetailsPage != null) {
+                Element descBlock = jobDetailsPage.selectFirst(
+                        "#content > div.sc-beqWaB.eFnOti > div.sc-dmqHEX.fPtgCq > div > div > div.sc-beqWaB.fmCCHr > div"
+                );
+
+                if (descBlock != null) {
+                    dto.setDescriptionHtml(descBlock.html());
+                } else {
+                    dto.setDescriptionHtml(null);
+                }
+            } else {
+                dto.setDescriptionHtml(null);
+            }
+        }
+
+        // tags
+        List<String> tags = new ArrayList<>();
+        Elements tagElements = jobElement.select("[data-testid=tag]");
+        for (Element tag : tagElements) {
+            String tagText = tag.text();
+            if (tagText != null && !tagText.isBlank()) {
+                tags.add(tagText.trim());
+            }
+        }
+        dto.setTags(tags.isEmpty() ? null : tags);
+
         return dto;
     }
-
-
 
     private void findTableWithBlocks(WebDriver driver) {
         WebElement tableBlock = null;
@@ -198,18 +246,4 @@ public class SeleniumHtmlFetcher {
         }
     }
 
-    public void fetch2() {
-        String url = "https://jobs.techstars.com/jobs";
-        WebDriverManager.chromedriver().setup();
-        WebDriver driver = new ChromeDriver();
-
-        try {
-            driver.get(url);
-            log.info(driver.getPageSource());
-        } catch (Exception e) {
-            log.error("Failed to load page: {}", e.getMessage(), e);
-        } finally {
-            driver.quit();
-        }
-    }
 }

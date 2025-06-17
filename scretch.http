@@ -1,7 +1,20 @@
+### POST selenium
+POST http://localhost:8080/api/jobs/parse
+Content-Type: application/json
+
+### POST selenium
+POST http://localhost:8080/admin/db/clean
+Content-Type: application/json
+
+
 ### GET selenium
 GET http://localhost:8080/s
 Content-Type: application/json
 
+
+### GET selenium
+GET http://localhost:8080/s
+Content-Type: application/json
 
 ### GET jsoup
 GET http://localhost:8080/j
