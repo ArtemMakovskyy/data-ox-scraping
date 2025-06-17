@@ -18,7 +18,8 @@ public class JobPosting {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "job_page_url", length = 191, unique = true)
+    @Lob
+    @Column(name = "job_page_url", columnDefinition = "TEXT")
     private String jobPageUrl;
 
     @Column(name = "position_name")

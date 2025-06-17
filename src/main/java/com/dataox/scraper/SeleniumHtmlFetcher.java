@@ -11,6 +11,7 @@ import org.jsoup.select.Elements;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -25,16 +26,18 @@ import java.util.List;
 @Log4j2
 @RequiredArgsConstructor
 public class SeleniumHtmlFetcher {
+    @Value("${jobs.techstars.url}")
+    private String jobUrl;
 
     private final WebDriverFactory webDriverFactory;
     private final JobPageFetcher jobPageFetcher;
 
-    public List<JobPostingDTO> fetch() {
+    public List<JobPostingDTO> fetch(String laborFunction) {
         WebDriver driver = webDriverFactory.createDriver();
         WebDriverWait wait = webDriverFactory.createWait(driver, Duration.ofSeconds(10));
 
         try {
-            driver.get("https://jobs.techstars.com/jobs");
+            driver.get(jobUrl);
             driver.manage().window().maximize();
 
             acceptCookiesIfPresent(driver);
@@ -47,22 +50,22 @@ public class SeleniumHtmlFetcher {
 
             // Step 2: Wait for the dropdown options to become visible
             wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.xpath("//div[contains(@class,'sc-beqWaB') and text()='Design']")
+                    By.xpath("//div[contains(@class,'sc-beqWaB') and text()='"
+                            + laborFunction + "']")
             ));
 
-            // Step 3: Click on the desired option (e.g., "Design")
+            // Step 3: Click on the desired option (e.g., "Design", or another passed value)
             WebElement desiredOption = driver.findElement(
-                    By.xpath("//div[contains(@class,'sc-beqWaB') and text()='Design']")
+                    By.xpath("//div[contains(@class,'sc-beqWaB') and text()='"
+                            + laborFunction + "']")
             );
             desiredOption.click();
+
 
             // Step 4: Wait for the page to apply the filter (this can be replaced with a more robust wait)
             Thread.sleep(3000);
 
-
-            findTableWithBlocks(driver);
-            List<JobPostingDTO> blocksInTable = findBlocksInTable(driver);
-
+            List<JobPostingDTO> blocksInTable = findBlocksInTable(driver, laborFunction);
 
             // Step 5: Return the HTML source
             return blocksInTable;
@@ -71,12 +74,12 @@ public class SeleniumHtmlFetcher {
             log.error("Failed to fetch HTML: {}", e.getMessage(), e);
             return Collections.emptyList();
         } finally {
-//            driver.quit();
+            driver.quit();
         }
     }
 
 
-    private List<JobPostingDTO> findBlocksInTable(WebDriver driver) {
+    private List<JobPostingDTO> findBlocksInTable(WebDriver driver, String laborFunction) {
 
         // found container with page
         WebElement tableBlock = driver.findElement(By.cssSelector("div.infinite-scroll-component.sc-beqWaB.biNQIL"));
@@ -89,36 +92,21 @@ public class SeleniumHtmlFetcher {
         List<JobPostingDTO> jobPostings = new ArrayList<>();
 
         //method fetch info from blocks
-        if (true) {
-//            List<WebElement> blocks = findBlocksInTable(driver);
-//            List<JobPostingDTO> jobPostings = new ArrayList<>();
+        for (WebElement block : jobBlocks) {
 
-            for (WebElement block : jobBlocks) {
-                System.out.println(" - - -->  ");
-                System.out.println(block.getAttribute("outerHTML"));
-                System.out.println(" <-- - - -  ");
-                //method get tags and past into dto
-                //todo get tags
+            String outerHtml = block.getAttribute("outerHTML");
+            Element jsoupElement = Jsoup.parse(outerHtml).body().child(0);
+            JobPostingDTO jobPostingDTO = parseJobPosting(jsoupElement, laborFunction);
 
-                String outerHtml = block.getAttribute("outerHTML");
-                Element jsoupElement = Jsoup.parse(outerHtml).body().child(0);
-                JobPostingDTO jobPostingDTO = parseJobPosting(jsoupElement);
-
-
-                //todo get other fields in block
-//                JobPostingDTO jobPostingDTO = parseJobBlock(block);
-
-                //todo add to list
-                jobPostings.add(jobPostingDTO);
-                log.info(jobPostingDTO);
-            }
+            jobPostings.add(jobPostingDTO);
+            log.info(jobPostingDTO);
         }
 
         return jobPostings;
     }
 
 
-    public JobPostingDTO parseJobPosting(Element jobElement) {
+    public JobPostingDTO parseJobPosting(Element jobElement, String laborFunction) {
         JobPostingDTO dto = new JobPostingDTO();
 
         // jobPageUrl
@@ -165,12 +153,7 @@ public class SeleniumHtmlFetcher {
         }
 
         // laborFunction
-        Element laborFunctionElement = jobElement.selectFirst("[itemprop=occupation]");
-        if (laborFunctionElement != null) {
-            dto.setLaborFunction(laborFunctionElement.text());
-        } else {
-            dto.setLaborFunction(null);
-        }
+        dto.setLaborFunction(laborFunction);
 
         // locations
         List<String> locations = new ArrayList<>();
@@ -182,7 +165,6 @@ public class SeleniumHtmlFetcher {
             }
         }
         dto.setLocations(locations.isEmpty() ? null : locations);
-
 
         // descriptionHtml
         if (dto.getJobPageUrl() != null) {
@@ -215,20 +197,6 @@ public class SeleniumHtmlFetcher {
         dto.setTags(tags.isEmpty() ? null : tags);
 
         return dto;
-    }
-
-    private void findTableWithBlocks(WebDriver driver) {
-        WebElement tableBlock = null;
-        try {
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            tableBlock = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.cssSelector("div.infinite-scroll-component.sc-beqWaB.biNQIL")
-            ));
-            log.info("Table with blocks found!");
-
-        } catch (TimeoutException e) {
-            log.error("Table with blocks not found");
-        }
     }
 
     private void acceptCookiesIfPresent(WebDriver driver) {

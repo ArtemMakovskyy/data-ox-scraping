@@ -19,20 +19,67 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Transactional
 public class JobPostingService {
+    private static final List<String> VALID_LABOR_FUNCTIONS = List.of(
+            "Accounting & Finance",
+            "Administration",
+            "Compliance / Regulatory",
+            "Customer Service",
+            "Data Science",
+            "Design",
+            "IT",
+            "Legal",
+            "Marketing & Communications",
+            "Operations",
+            "Other Engineering",
+            "People & HR",
+            "Product",
+            "Quality Assurance",
+            "Sales & Business Development",
+            "Software Engineering"
+    );
 
     private final JobPostingRepository jobPostingRepository;
     private final TagRepository tagRepository;
     private final SeleniumHtmlFetcher seleniumHtmlFetcher;
 
-    public void parse(){
-        List<JobPostingDTO> fetch = seleniumHtmlFetcher.fetch();
-        for (JobPostingDTO jobPostingDTO : fetch) {
-            saveJobPosting(jobPostingDTO);
+    /**
+     * Validates and normalizes the labor function string.
+     * Throws IllegalArgumentException if input is invalid.
+     */
+    private String normalizeLaborFunction(String input) {
+        if (input == null || input.isBlank()) {
+            throw new IllegalArgumentException("Labor function cannot be null or empty");
+        }
+
+        String trimmedInput = input.trim();
+
+        for (String validFunction : VALID_LABOR_FUNCTIONS) {
+            if (validFunction.equalsIgnoreCase(trimmedInput)) {
+                return validFunction;
+            }
+        }
+
+        throw new IllegalArgumentException("Invalid labor function: " + input +
+                ". Valid options are: " + VALID_LABOR_FUNCTIONS);
+    }
+
+    /**
+     * Fetches job postings for a validated labor function and saves them if they don't already exist.
+     */
+    public void scrapeAndSaveJobs(String laborFunction) {
+        String normalizedLaborFunction = normalizeLaborFunction(laborFunction);
+        List<JobPostingDTO> fetchedJobs = seleniumHtmlFetcher.fetch(normalizedLaborFunction);
+        for (JobPostingDTO jobPostingDTO : fetchedJobs) {
+            saveIfNotExists(jobPostingDTO);
         }
     }
 
-    public JobPosting saveJobPosting(JobPostingDTO dto) {
-        if (jobPostingRepository.existsByJobPageUrl(dto.getJobPageUrl())) {
+    /**
+     * Saves the job posting if it doesn't already exist by job page URL.
+     * Returns the saved JobPosting or null if it already exists.
+     */
+    public JobPosting saveIfNotExists(JobPostingDTO dto) {
+        if (existsByJobPageUrl(dto.getJobPageUrl())) {
             return null;
         }
 
@@ -46,24 +93,24 @@ public class JobPostingService {
         jobPosting.setPostedDateUnix(dto.getPostedDateUnix());
         jobPosting.setDescriptionHtml(dto.getDescriptionHtml());
 
-        // Locations
+        // Set locations
         List<Location> locations = new ArrayList<>();
         if (dto.getLocations() != null) {
-            dto.getLocations().forEach(locStr -> {
-                Location loc = new Location();
-                loc.setAddress(locStr);
-                loc.setJobPosting(jobPosting);
-                locations.add(loc);
+            dto.getLocations().forEach(address -> {
+                Location location = new Location();
+                location.setAddress(address);
+                location.setJobPosting(jobPosting);
+                locations.add(location);
             });
         }
         jobPosting.setLocations(locations);
 
-        // Tags
+        // Set tags
         List<Tag> tags = new ArrayList<>();
         if (dto.getTags() != null) {
             for (String tagName : dto.getTags()) {
-                Optional<Tag> tagOpt = tagRepository.findByName(tagName);
-                Tag tag = tagOpt.orElseGet(() -> {
+                Optional<Tag> existingTag = tagRepository.findByName(tagName);
+                Tag tag = existingTag.orElseGet(() -> {
                     Tag newTag = new Tag();
                     newTag.setName(tagName);
                     return newTag;
@@ -76,11 +123,24 @@ public class JobPostingService {
         return jobPostingRepository.save(jobPosting);
     }
 
-    public List<JobPosting> getAllJobPostings() {
+    /**
+     * Retrieves all saved job postings.
+     */
+    public List<JobPosting> findAll() {
         return jobPostingRepository.findAll();
     }
 
-    public Optional<JobPosting> getJobPostingById(Long id) {
+    /**
+     * Finds a job posting by its ID.
+     */
+    public Optional<JobPosting> findById(Long id) {
         return jobPostingRepository.findById(id);
+    }
+
+    /**
+     * Checks if a job posting exists by its job page URL.
+     */
+    private boolean existsByJobPageUrl(String jobPageUrl) {
+        return jobPostingRepository.existsByJobPageUrl(jobPageUrl);
     }
 }

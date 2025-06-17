@@ -1,26 +1,23 @@
 ### POST selenium
-POST http://localhost:8080/api/jobs/parse
+POST http://localhost:8080/api/jobs/parse?laborFunction=Design
 Content-Type: application/json
 
 ### POST selenium
+POST http://localhost:8080/api/jobs/parse?laborFunction=Administration
+Content-Type: application/json
+
+### POST selenium
+POST http://localhost:8080/api/jobs/parse?laborFunction=IT
+Content-Type: application/json
+
+### POST selenium
+POST http://localhost:8080/api/jobs/parse?laborFunction=Legal
+Content-Type: application/json
+
+### POST selenium
+POST http://localhost:8080/api/jobs/parse?laborFunction=Accounting & Finance
+Content-Type: application/json
+
+### POST clean data
 POST http://localhost:8080/admin/db/clean
-Content-Type: application/json
-
-
-### GET selenium
-GET http://localhost:8080/s
-Content-Type: application/json
-
-
-### GET selenium
-GET http://localhost:8080/s
-Content-Type: application/json
-
-### GET jsoup
-GET http://localhost:8080/j
-Content-Type: application/json
-
-
-### GET jsoup
-GET http://localhost:8080/jft
 Content-Type: application/json
