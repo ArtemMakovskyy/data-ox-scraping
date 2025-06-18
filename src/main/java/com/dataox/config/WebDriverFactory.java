@@ -18,10 +18,6 @@ public class WebDriverFactory {
     public WebDriver createDriver() {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--remote-allow-origins=*");
-        if (headless) {
-            options.addArguments("--headless");
-            options.addArguments("--disable-gpu");
-        }
         return new ChromeDriver(options);
     }
 

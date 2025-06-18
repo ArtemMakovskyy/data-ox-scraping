@@ -9,6 +9,7 @@ import com.dataox.repository.TagRepository;
 import com.dataox.scraper.SeleniumHtmlFetcher;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Log4j2
 public class JobPostingService {
     private static final List<String> VALID_LABOR_FUNCTIONS = List.of(
             "Accounting & Finance",
@@ -69,11 +71,16 @@ public class JobPostingService {
     public void scrapeAndSaveJobs(String laborFunction) {
         String normalizedLaborFunction = normalizeLaborFunction(laborFunction);
         List<JobPostingDTO> fetchedJobs = seleniumHtmlFetcher.fetch(normalizedLaborFunction);
-        for (JobPostingDTO jobPostingDTO : fetchedJobs) {
-            saveIfNotExists(jobPostingDTO);
+
+        for (JobPostingDTO dto : fetchedJobs) {
+            try {
+                saveIfNotExists(dto);
+            } catch (Exception e) {
+                log.error("Failed to save job posting [URL={}], position='{}'",
+                        dto.getJobPageUrl(), dto.getPositionName(), e);
+            }
         }
     }
-
     /**
      * Saves the job posting if it doesn't already exist by job page URL.
      * Returns the saved JobPosting or null if it already exists.

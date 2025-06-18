@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS job_postings (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    job_page_url VARCHAR(191) NOT NULL UNIQUE,
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    job_page_url TEXT,
     position_name VARCHAR(255),
     organization_url VARCHAR(1000),
     logo_url VARCHAR(1000),
