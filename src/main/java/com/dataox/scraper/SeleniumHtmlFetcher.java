@@ -61,15 +61,21 @@ public class SeleniumHtmlFetcher {
             );
             desiredOption.click();
 
-
             // Step 4: Wait for the page to apply the filter (this can be replaced with a more robust wait)
             Thread.sleep(3000);
 
+            // Step 5: find items quantity
+            WebElement element = driver.findElement(By.xpath("//div[contains(text(),'Showing')]/b"));
+            String text = element.getText();
+            String digits = text.replaceAll("\\D+", "");
+            log.info("Job items found: " + digits);
+
+            //todo Step 6: press button to open all items
+
+
+            // Step 5: Return JobPostingDTO
             List<JobPostingDTO> blocksInTable = findBlocksInTable(driver, laborFunction);
-
-            // Step 5: Return the HTML source
             return blocksInTable;
-
         } catch (Exception e) {
             log.error("Failed to fetch HTML: {}", e.getMessage(), e);
             return Collections.emptyList();
