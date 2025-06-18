@@ -1,15 +1,15 @@
-package com.dataox.scraper;
+package com.dataox.scraper.impl;
 
+import com.dataox.scraper.PageFetcher;
+import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-
 @Slf4j
 @Component
-public class JobPageFetcher {
+public class JobPageFetcher implements PageFetcher {
 
     /**
      * Tries to fetch the HTML document from the given URL.
@@ -18,6 +18,7 @@ public class JobPageFetcher {
      * @param jobPageUrl the job page URL
      * @return Jsoup Document or null
      */
+    @Override
     public Document fetch(String jobPageUrl) {
         try {
             return Jsoup.connect(jobPageUrl)
