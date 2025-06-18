@@ -25,11 +25,7 @@ public class JobFormController {
             "Marketing & Communications",
             "Operations",
             "Other Engineering",
-            "People & HR",
-            "Product",
-            "Quality Assurance",
-            "Sales & Business Development",
-            "Software Engineering"
+            "People & HR"
     );
 
     private final JobPostingService jobPostingService;

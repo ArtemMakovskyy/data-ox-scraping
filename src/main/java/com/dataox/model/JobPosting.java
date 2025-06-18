@@ -12,7 +12,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -56,12 +56,12 @@ public class JobPosting {
 
     // Locations
     @OneToMany(mappedBy = "jobPosting", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Location> locations;
+    private Set<Location> locations;
 
     // Tags
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "job_posting_tags",
             joinColumns = @JoinColumn(name = "job_posting_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
-    private List<Tag> tags;
+    private Set<Tag> tags;
 }

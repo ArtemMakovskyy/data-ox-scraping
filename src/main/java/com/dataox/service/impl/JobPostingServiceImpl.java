@@ -9,9 +9,10 @@ import com.dataox.repository.TagRepository;
 import com.dataox.scraper.JobFetcher;
 import com.dataox.service.JobPostingService;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -76,7 +77,7 @@ public class JobPostingServiceImpl implements JobPostingService {
         jobPosting.setDescriptionHtml(dto.getDescriptionHtml());
 
         // Set locations
-        List<Location> locations = new ArrayList<>();
+        Set<Location> locations = new HashSet<>();
         if (dto.getLocations() != null) {
             dto.getLocations().forEach(address -> {
                 Location location = new Location();
@@ -88,7 +89,7 @@ public class JobPostingServiceImpl implements JobPostingService {
         jobPosting.setLocations(locations);
 
         // Set tags
-        List<Tag> tags = new ArrayList<>();
+        Set<Tag> tags = new HashSet<>();
         if (dto.getTags() != null) {
             for (String tagName : dto.getTags()) {
                 Optional<Tag> existingTag = tagRepository.findByName(tagName);

@@ -15,28 +15,10 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 30s
       timeout: 30s
       retries: 3
-    networks:
-      - app-data-ox-network
-
-  parser-app:
-    container_name: parser-app-container
-    depends_on:
-      mysql-parser-db:
-        condition: service_healthy
-    build: .
-    restart: unless-stopped
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-parser-db:3306/parser-db?serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: userName
-      SPRING_DATASOURCE_PASSWORD: secret
-      SPRING_JPA_HIBERNATE_DDL_AUTO: none
-      SERVER_PORT: 8082
-    ports:
-      - "8082:8082"
     networks:
       - app-data-ox-network
 

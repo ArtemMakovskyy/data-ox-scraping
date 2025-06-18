@@ -11,7 +11,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.jsoup.Jsoup;
@@ -132,8 +134,9 @@ public class SeleniumHtmlFetcher implements JobFetcher {
             try {
                 WebElement loadMoreButton = buttons.get(0);
                 if (loadMoreButton.isDisplayed() && loadMoreButton.isEnabled()) {
-                    log.info("Clicking 'Load more' button...");
-                    loadMoreButton.click();
+                    log.info("Clicking 'Load more' button with JavaScript...");
+                    ((JavascriptExecutor) driver).executeScript(
+                            "arguments[0].click();", loadMoreButton);
                     Thread.sleep(1500);
                 } else {
                     log.info("'Load more' button is not clickable. Stopping.");
@@ -234,8 +237,8 @@ public class SeleniumHtmlFetcher implements JobFetcher {
         return 0L;
     }
 
-    private List<String> parseLocations(Element jobElement) {
-        List<String> locations = new ArrayList<>();
+    private Set<String> parseLocations(Element jobElement) {
+        Set<String> locations = new HashSet<>();
         Elements locationMetaElements = jobElement.select(CSS_LOCATIONS_META);
         for (Element locMeta : locationMetaElements) {
             String address = locMeta.attr("content");
@@ -258,8 +261,8 @@ public class SeleniumHtmlFetcher implements JobFetcher {
         return null;
     }
 
-    private List<String> parseTags(Element jobElement) {
-        List<String> tags = new ArrayList<>();
+    private Set<String> parseTags(Element jobElement) {
+        Set<String> tags = new HashSet<>();
         Elements tagElements = jobElement.select(CSS_TAGS);
         for (Element tag : tagElements) {
             String tagText = tag.text();

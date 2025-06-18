@@ -7,7 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -27,5 +27,5 @@ public class Tag {
     private String name;
 
     @ManyToMany(mappedBy = "tags")
-    private List<JobPosting> jobPostings;
+    private Set<JobPosting> jobPostings;
 }
