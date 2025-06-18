@@ -70,10 +70,34 @@ public class SeleniumHtmlFetcher {
             String digits = text.replaceAll("\\D+", "");
             log.info("Job items found: " + digits);
 
-            //todo Step 6: press button to open all items
+            // Step 6: press button to open all items
+            while (true) {
+                ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight);");
 
+                List<WebElement> buttons = driver.findElements(By.xpath("//div[text()='Load more']"));
 
-            // Step 5: Return JobPostingDTO
+                if (buttons.isEmpty()) {
+                    log.info("No more 'Load more' button found. All items are loaded.");
+                    break;
+                }
+
+                try {
+                    WebElement loadMoreButton = buttons.get(0);
+                    if (loadMoreButton.isDisplayed() && loadMoreButton.isEnabled()) {
+                        log.info("Clicking 'Load more' button...");
+                        loadMoreButton.click();
+                        Thread.sleep(1500); // wait for new items to load
+                    } else {
+                        log.info("'Load more' button is not clickable. Stopping.");
+                        break;
+                    }
+                } catch (Exception e) {
+                    log.warn("Error while pressing 'Load more': {}", e.getMessage());
+                    break;
+                }
+            }
+
+// Step 7: Return JobPostingDTO
             List<JobPostingDTO> blocksInTable = findBlocksInTable(driver, laborFunction);
             return blocksInTable;
         } catch (Exception e) {
@@ -105,7 +129,7 @@ public class SeleniumHtmlFetcher {
             JobPostingDTO jobPostingDTO = parseJobPosting(jsoupElement, laborFunction);
 
             jobPostings.add(jobPostingDTO);
-            log.info(jobPostingDTO);
+//            log.info(jobPostingDTO);
         }
 
         return jobPostings;
