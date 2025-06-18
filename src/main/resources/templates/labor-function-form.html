@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Labor Function</title>
+</head>
+<body>
+<h1>Select a Labor Function</h1>
+<form method="post" th:action="@{/parse}">
+    <label for="laborFunction">Labor Function:</label>
+    <select id="laborFunction" name="laborFunction">
+        <option th:each="func : ${functions}" th:value="${func}" th:text="${func}"></option>
+    </select>
+    <button type="submit">Parse</button>
+</form>
+</body>
+</html>

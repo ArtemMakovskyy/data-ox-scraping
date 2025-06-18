@@ -1,9 +1,9 @@
 ### POST selenium
-POST http://localhost:8080/api/jobs/parse?laborFunction=Design
+POST http://localhost:8080/api/jobs/parse?laborFunction=Administration
 Content-Type: application/json
 
 ### POST selenium
-POST http://localhost:8080/api/jobs/parse?laborFunction=Administration
+POST http://localhost:8080/api/jobs/parse?laborFunction=Design
 Content-Type: application/json
 
 ### POST selenium
