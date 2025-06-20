@@ -1,7 +1,3 @@
-### POST clean data
-POST http://localhost:8082/admin/db/clean
-Content-Type: application/json
-
 ### GET all jobs
 GET http://localhost:8082/api/jobs
 Content-Type: application/json

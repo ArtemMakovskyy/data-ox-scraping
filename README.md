@@ -13,7 +13,6 @@ for that category and saves them to an SQL database.
 - Web interface to start scraping by job function at:  
   `http://localhost:8082/form`
 - Allows sequential scraping by different job categories via the form.
-- Database cleaning available via API (POST `/admin/db/clean`) before scraping.
 - REST API to retrieve all jobs or a job by ID.
 - Scraping results saved to an SQL database with schema; database dump available.
 - Built with Spring Boot, Maven, and ORM for database interaction.
@@ -25,16 +24,6 @@ for that category and saves them to an SQL database.
   `http://localhost:8082/form`
 - After selecting and submitting a job function, scraping starts for that category.
 - It is recommended to clean the database via API before starting new scraping.
-
-### POST Clean Database
-
-```
-POST http://localhost:8082/admin/db/clean
-Content-Type: application/json
-```
-
-Response:  
-`Database cleaned.`
 
 ---
 

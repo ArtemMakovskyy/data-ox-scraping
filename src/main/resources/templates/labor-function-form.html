@@ -7,7 +7,6 @@
 <body>
 <h1>Select a Labor Function</h1>
 
-<!-- Форма выбора функции -->
 <form method="post" th:action="@{/parse}">
     <label for="laborFunction">Labor Function:</label>
     <select id="laborFunction" name="laborFunction">
@@ -17,11 +16,6 @@
 </form>
 
 <br/><hr/><br/>
-
-<!-- Форма очистки базы -->
-<form method="post" th:action="@{/admin/db/clean}">
-    <button type="submit" onclick="return confirm('Are you sure you want to clean the database?')">Clean Database</button>
-</form>
 
 </body>
 </html>

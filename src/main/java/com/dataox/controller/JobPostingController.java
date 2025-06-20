@@ -1,6 +1,6 @@
 package com.dataox.controller;
 
-import com.dataox.model.JobPosting;
+import com.dataox.dto.JobPostingDto;
 import com.dataox.service.JobPostingService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -11,25 +11,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/jobs")
+@RequestMapping("/api/job-postings")
 @RequiredArgsConstructor
 public class JobPostingController {
 
     private final JobPostingService jobPostingService;
 
     @GetMapping
-    public ResponseEntity<List<JobPosting>> getAllJobs() {
-        System.out.println("getAllJobs");
-        List<JobPosting> jobs = jobPostingService.findAll();
-        return ResponseEntity.ok(jobs);
+    public ResponseEntity<List<JobPostingDto>> getAllJobs() {
+        return ResponseEntity.ok(jobPostingService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<JobPosting> getJobById(@PathVariable Long id) {
-        System.out.println("getJobById");
-        return jobPostingService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<JobPostingDto> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(jobPostingService.getById(id));
     }
-
 }
