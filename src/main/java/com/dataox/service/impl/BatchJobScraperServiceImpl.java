@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,6 +46,12 @@ public class BatchJobScraperServiceImpl implements BatchJobScraperService {
             Thread.currentThread().interrupt();
             log.error("Batch scraping interrupted", e);
         }
+    }
+
+    @Scheduled(cron = "${jobs.scraper.schedule}")
+    public void scheduledBatchScrape() {
+        log.info("Running scheduled batch job scrape at 08:00");
+        scrapeAllInParallel();
     }
 
     @PreDestroy
