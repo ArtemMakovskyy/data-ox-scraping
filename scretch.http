@@ -2,6 +2,10 @@
 GET http://localhost:8082/api/jobs
 Content-Type: application/json
 
+### POST scrap all
+POST http://localhost:8082/api/jobs/parse-all
+Content-Type: application/json
+
 ### GET job by id
 GET http://localhost:8082/api/jobs/1
 Content-Type: application/json

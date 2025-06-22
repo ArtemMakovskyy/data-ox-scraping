@@ -3,6 +3,7 @@ package com.dataox.controller;
 import com.dataox.service.JobPostingService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,26 +14,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 public class JobFormController {
 
-    private static final List<String> VALID_LABOR_FUNCTIONS = List.of(
-            "Accounting & Finance",
-            "Administration",
-            "Compliance / Regulatory",
-            "Customer Service",
-            "Data Science",
-            "Design",
-            "IT",
-            "Legal",
-            "Marketing & Communications",
-            "Operations",
-            "Other Engineering",
-            "People & HR"
-    );
+    @Value("#{'${labor.functions}'.split(',')}")
+    private List<String> laborFunctions;
 
     private final JobPostingService jobPostingService;
 
     @GetMapping("/form")
     public String showForm(Model model) {
-        model.addAttribute("functions", VALID_LABOR_FUNCTIONS);
+        model.addAttribute("functions", laborFunctions);
         return "labor-function-form";
     }
 
