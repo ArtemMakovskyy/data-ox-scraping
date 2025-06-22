@@ -14,6 +14,7 @@ for that category and saves them to an SQL database.
   `http://localhost:8082/form`
 - Allows sequential scraping by different job categories via the form.
 - REST API to retrieve all jobs or a job by ID.
+- POST trigger batch job scraping. Use multithread
 - Scraping results saved to an SQL database with schema; database dump available.
 - Built with Spring Boot, Maven, and ORM for database interaction.
 - MySql is available in Docker support.
@@ -42,6 +43,21 @@ Content-Type: application/json
 GET http://localhost:8082/api/jobs/{id}
 Content-Type: application/json
 ```
+
+---
+### POST trigger batch job scraping. Use multithread
+
+```
+GET http://localhost:8082/api/jobs/{id}
+Content-Type: application/json
+```
+
+---
+# How to Run REST Endpoints via Scratch File
+
+You can run REST endpoints using a **Scratch file** in IntelliJ IDEA.
+
+The `.http` Scratch file is located in the **root directory** of the project.
 
 ---
 
