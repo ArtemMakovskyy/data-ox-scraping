@@ -4,11 +4,15 @@ import com.dataox.dto.JobPostingDto;
 import com.dataox.exception.EntityNotFoundException;
 import com.dataox.mappper.JobPostingMapper;
 import com.dataox.model.JobPosting;
+import com.dataox.model.Tag;
 import com.dataox.repository.JobPostingRepository;
+import com.dataox.repository.TagRepository;
 import com.dataox.scraper.JobFetcher;
 import com.dataox.service.JobPostingService;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -27,6 +31,7 @@ public class JobPostingServiceImpl implements JobPostingService {
     );
 
     private final JobPostingRepository jobPostingRepository;
+    private final TagRepository tagRepository;
     private final JobPostingMapper jobPostingMapper;
     private final JobFetcher jobFetcher;
 
@@ -52,8 +57,17 @@ public class JobPostingServiceImpl implements JobPostingService {
         }
 
         JobPosting jobPosting = jobPostingMapper.toEntity(dto);
+
+        Set<Tag> resolvedTags = jobPosting.getTags().stream()
+                .map(tag -> tagRepository.findByName(tag.getName())
+                        .orElseGet(() -> tagRepository.save(tag)))
+                .collect(Collectors.toSet());
+
+        jobPosting.setTags(resolvedTags);
+
         return jobPostingRepository.save(jobPosting);
     }
+
 
     @Override
     public List<JobPostingDto> findAll() {

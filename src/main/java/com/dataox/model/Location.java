@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -30,4 +31,18 @@ public class Location {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_posting_id")
     private JobPosting jobPosting;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Location location = (Location) o;
+        return Objects.equals(id, location.id) && Objects.equals(address, location.address);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, address);
+    }
 }

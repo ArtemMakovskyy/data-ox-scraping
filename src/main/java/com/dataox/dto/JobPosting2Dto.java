@@ -8,15 +8,15 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class JobPostingDto {
+public class JobPosting2Dto {
     private String jobPageUrl;
     private String positionName;
     private String organizationUrl;
     private String logoUrl;
     private String organizationTitle;
     private String laborFunction;
-    private Set<LocationDto> locations;
+    private Set<String> locations;
     private long postedDateUnix;
     private String descriptionHtml;
-    private Set<TagDto> tags;
+    private Set<String> tags;
 }

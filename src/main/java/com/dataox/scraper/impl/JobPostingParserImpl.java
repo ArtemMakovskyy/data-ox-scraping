@@ -1,6 +1,8 @@
 package com.dataox.scraper.impl;
 
 import com.dataox.dto.JobPostingDto;
+import com.dataox.dto.LocationDto;
+import com.dataox.dto.TagDto;
 import com.dataox.exception.JobParsingException;
 import com.dataox.scraper.JobPostingParser;
 import com.dataox.scraper.PageFetcher;
@@ -27,9 +29,9 @@ public class JobPostingParserImpl implements JobPostingParser {
     private static final String CSS_POSTED_DATE_META = "meta[itemprop=datePosted]";
     private static final String CSS_LOCATIONS_META
             = "[itemprop=jobLocation] meta[itemprop=address]";
-    private static final String CSS_DESCRIPTION_BLOCK =
-            "#content > div.sc-beqWaB.eFnOti > div.sc-dmqHEX.fPtgCq > div > div > "
-                    + "div.sc-beqWaB.fmCCHr > div";
+    private static final String CSS_DESCRIPTION_BLOCK
+            = "#content > div.sc-beqWaB.eFnOti > div.sc-dmqHEX.fPtgCq "
+            + "> div > div > div.sc-beqWaB.fmCCHr > div";
     private static final String CSS_TAGS = "[data-testid=tag]";
     private static final String ATTR_CONTENT = "content";
     private static final String ATTR_HREF = "href";
@@ -42,14 +44,11 @@ public class JobPostingParserImpl implements JobPostingParser {
         try {
             JobPostingDto dto = new JobPostingDto();
             dto.setJobPageUrl(parseHref(jobElement.selectFirst(CSS_JOB_LINK)));
-            dto.setPositionName(parseText(
-                    jobElement.selectFirst(CSS_POSITION_NAME)));
-            dto.setOrganizationUrl(parseHref(
-                    jobElement.selectFirst(CSS_ORGANIZATION_LINK)));
+            dto.setPositionName(parseText(jobElement.selectFirst(CSS_POSITION_NAME)));
+            dto.setOrganizationUrl(parseHref(jobElement.selectFirst(CSS_ORGANIZATION_LINK)));
             dto.setOrganizationTitle(parseContent(
                     jobElement.selectFirst(CSS_ORGANIZATION_TITLE_META)));
-            dto.setLogoUrl(parseContent(
-                    jobElement.selectFirst(CSS_LOGO_META)));
+            dto.setLogoUrl(parseContent(jobElement.selectFirst(CSS_LOGO_META)));
             dto.setPostedDateUnix(parsePostedDateUnix(
                     jobElement.selectFirst(CSS_POSTED_DATE_META)));
             dto.setLaborFunction(laborFunction);
@@ -112,13 +111,15 @@ public class JobPostingParserImpl implements JobPostingParser {
         }
     }
 
-    private Set<String> parseLocations(Element jobElement) {
-        Set<String> locations = new HashSet<>();
+    private Set<LocationDto> parseLocations(Element jobElement) {
+        Set<LocationDto> locations = new HashSet<>();
         Elements locationMetaElements = jobElement.select(CSS_LOCATIONS_META);
         for (Element locMeta : locationMetaElements) {
             String address = locMeta.attr(ATTR_CONTENT);
             if (address != null && !address.isBlank()) {
-                locations.add(address);
+                LocationDto locationDto = new LocationDto();
+                locationDto.setAddress(address);
+                locations.add(locationDto);
             }
         }
         return locations.isEmpty() ? Set.of() : locations;
@@ -138,13 +139,15 @@ public class JobPostingParserImpl implements JobPostingParser {
         return null;
     }
 
-    private Set<String> parseTags(Element jobElement) {
-        Set<String> tags = new HashSet<>();
+    private Set<TagDto> parseTags(Element jobElement) {
+        Set<TagDto> tags = new HashSet<>();
         Elements tagElements = jobElement.select(CSS_TAGS);
         for (Element tag : tagElements) {
             String tagText = tag.text();
             if (tagText != null && !tagText.isBlank()) {
-                tags.add(tagText.trim());
+                TagDto tagDto = new TagDto();
+                tagDto.setName(tagText.trim());
+                tags.add(tagDto);
             }
         }
         return tags.isEmpty() ? Set.of() : tags;

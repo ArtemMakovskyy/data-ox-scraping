@@ -87,18 +87,18 @@ public class SeleniumHtmlFetcher implements JobFetcher {
                 log.info("Cookie banner accepted using JavaScript click");
             }
         } catch (TimeoutException ignored) {
-            //should be clear
+            // no cookie banner present
         }
     }
 
     private void selectJobFunction(WebDriverWait wait, String laborFunction) {
-        WebElement jobFunctionDropdown = wait.until(
-                ExpectedConditions.elementToBeClickable(By.cssSelector(URL_JOB_FUNCTION_DROPDOWN)));
+        WebElement jobFunctionDropdown = wait.until(ExpectedConditions
+                .elementToBeClickable(By.cssSelector(URL_JOB_FUNCTION_DROPDOWN)));
         jobFunctionDropdown.click();
 
         String optionXpath = String.format(XPATH_JOB_FUNCTION_OPTION, laborFunction);
-        WebElement desiredOption = wait.until(
-                ExpectedConditions.elementToBeClickable(By.xpath(optionXpath)));
+        WebElement desiredOption = wait.until(ExpectedConditions
+                .elementToBeClickable(By.xpath(optionXpath)));
         desiredOption.click();
     }
 
