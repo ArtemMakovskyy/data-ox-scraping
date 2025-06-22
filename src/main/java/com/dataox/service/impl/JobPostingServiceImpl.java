@@ -4,15 +4,15 @@ import com.dataox.dto.JobPostingDto;
 import com.dataox.exception.EntityNotFoundException;
 import com.dataox.mappper.JobPostingMapper;
 import com.dataox.model.JobPosting;
+import com.dataox.model.LaborFunction;
 import com.dataox.model.Tag;
 import com.dataox.repository.JobPostingRepository;
-import com.dataox.repository.TagRepository;
 import com.dataox.scraper.JobFetcher;
 import com.dataox.service.JobPostingService;
+import com.dataox.service.TagService;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -23,16 +23,9 @@ import org.springframework.stereotype.Service;
 @Log4j2
 public class JobPostingServiceImpl implements JobPostingService {
 
-    private static final List<String> VALID_LABOR_FUNCTIONS = List.of(
-            "Accounting & Finance", "Administration", "Compliance / Regulatory", "Customer Service",
-            "Data Science", "Design", "IT", "Legal", "Marketing & Communications", "Operations",
-            "Other Engineering", "People & HR", "Product", "Quality Assurance",
-            "Sales & Business Development", "Software Engineering"
-    );
-
     private final JobPostingRepository jobPostingRepository;
-    private final TagRepository tagRepository;
     private final JobPostingMapper jobPostingMapper;
+    private final TagService tagService;
     private final JobFetcher jobFetcher;
 
     @Override
@@ -44,7 +37,7 @@ public class JobPostingServiceImpl implements JobPostingService {
             try {
                 saveIfNotExists(dto);
             } catch (Exception e) {
-                log.error("Failed to save job posting [URL={}], position='{}'",
+                log.error("Failed to save job posting [URL={}], position='{}']",
                         dto.getJobPageUrl(), dto.getPositionName(), e);
             }
         }
@@ -56,18 +49,9 @@ public class JobPostingServiceImpl implements JobPostingService {
             return null;
         }
 
-        JobPosting jobPosting = jobPostingMapper.toEntity(dto);
-
-        Set<Tag> resolvedTags = jobPosting.getTags().stream()
-                .map(tag -> tagRepository.findByName(tag.getName())
-                        .orElseGet(() -> tagRepository.save(tag)))
-                .collect(Collectors.toSet());
-
-        jobPosting.setTags(resolvedTags);
-
+        JobPosting jobPosting = mapAndResolveTags(dto);
         return jobPostingRepository.save(jobPosting);
     }
-
 
     @Override
     public List<JobPostingDto> findAll() {
@@ -84,17 +68,15 @@ public class JobPostingServiceImpl implements JobPostingService {
         return jobPostingMapper.toDto(jobPosting);
     }
 
-    private String normalizeLaborFunction(String input) {
-        if (input == null || input.isBlank()) {
-            throw new IllegalArgumentException("Labor function cannot be null or empty");
-        }
+    private JobPosting mapAndResolveTags(JobPostingDto dto) {
+        JobPosting jobPosting = jobPostingMapper.toEntity(dto);
+        Set<Tag> resolvedTags = tagService.resolveTags(jobPosting.getTags());
+        jobPosting.setTags(resolvedTags);
+        return jobPosting;
+    }
 
-        String trimmedInput = input.trim();
-        return VALID_LABOR_FUNCTIONS.stream()
-                .filter(valid -> valid.equalsIgnoreCase(trimmedInput))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid labor function: " + input
-                        + ". Valid options are: " + VALID_LABOR_FUNCTIONS));
+    private String normalizeLaborFunction(String input) {
+        return LaborFunction.fromString(input).getLabel();
     }
 
     private boolean existsByJobPageUrl(String jobPageUrl) {

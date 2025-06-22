@@ -54,11 +54,9 @@ public class JobPosting {
     @Column(name = "description_html", columnDefinition = "TEXT")
     private String descriptionHtml;
 
-    // Locations
     @OneToMany(mappedBy = "jobPosting", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Location> locations;
 
-    // Tags
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "job_posting_tags",
             joinColumns = @JoinColumn(name = "job_posting_id"),
