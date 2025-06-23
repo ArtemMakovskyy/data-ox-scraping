@@ -12,4 +12,12 @@ public interface JobPostingService {
     List<JobPostingDto> findAll();
 
     JobPostingDto getById(Long id);
+
+    List<JobPostingDto> findFiltered(
+            String positionName,
+            String organizationTitle,
+            String laborFunction,
+            String location,
+            String sort
+    );
 }

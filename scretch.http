@@ -1,12 +1,23 @@
-### 🔍 GET all job postings
+### GET all job postings
 GET http://localhost:8082/api/jobs
 Content-Type: application/json
 
-### 🚀 POST trigger batch job scraping
+### POST trigger batch job scraping
 POST http://localhost:8082/api/jobs/parse-all
 Content-Type: application/json
 
-### 🔍 GET job posting by ID
+### GET job posting by ID
 GET http://localhost:8082/api/jobs/1
 Content-Type: application/json
 
+### GET filtered job postings by positionName, organizationTitle, laborFunction, location, sort by date
+GET http://localhost:8082/api/jobs/filtered?positionName=Head of Finance&sort=date
+Content-Type: application/json
+
+### GET filtered job postings by laborFunction only
+GET http://localhost:8082/api/jobs/filtered?laborFunction=Other Engineering
+Content-Type: application/json
+
+### GET filtered job postings by location only
+GET http://localhost:8082/api/jobs/filtered?location=Remote
+Content-Type: application/json

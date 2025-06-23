@@ -11,8 +11,10 @@ import com.dataox.scraper.JobFetcher;
 import com.dataox.service.JobPostingService;
 import com.dataox.service.TagService;
 import jakarta.transaction.Transactional;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,44 @@ public class JobPostingServiceImpl implements JobPostingService {
     private final JobPostingMapper jobPostingMapper;
     private final TagService tagService;
     private final JobFetcher jobFetcher;
+
+    @Override
+    public List<JobPostingDto> findFiltered(
+            String positionName,
+            String organizationTitle,
+            String laborFunction,
+            String location,
+            String sort
+    ) {
+        List<JobPosting> postings = jobPostingRepository.findAll();
+
+        Stream<JobPosting> stream = postings.stream();
+
+        if (positionName != null && !positionName.isBlank()) {
+            stream = stream.filter(j -> j.getPositionName().toLowerCase().contains(positionName.toLowerCase()));
+        }
+
+        if (organizationTitle != null && !organizationTitle.isBlank()) {
+            stream = stream.filter(j -> j.getOrganizationTitle().toLowerCase().contains(organizationTitle.toLowerCase()));
+        }
+
+        if (laborFunction != null && !laborFunction.isBlank()) {
+            stream = stream.filter(j -> j.getLaborFunction().toLowerCase().contains(laborFunction.toLowerCase()));
+        }
+
+        if (location != null && !location.isBlank()) {
+            stream = stream.filter(j -> j.getLocations().stream()
+                    .anyMatch(loc -> loc.getAddress().toLowerCase().contains(location.toLowerCase())));
+        }
+
+        if ("date".equalsIgnoreCase(sort)) {
+            stream = stream.sorted(Comparator.comparingLong(JobPosting::getPostedDateUnix).reversed());
+        }
+
+        return stream
+                .map(jobPostingMapper::toDto)
+                .toList();
+    }
 
     @Override
     public void scrapeAndSaveJobs(String laborFunction) {
